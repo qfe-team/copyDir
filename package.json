@@ -1,7 +1,7 @@
 {
   "name": "cp-file",
   "version": "1.0.0",
-  "description": "Copies files and directory",
+  "description": "Copies files and directory.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
