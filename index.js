@@ -11,6 +11,7 @@ var copyDir = function (opts) {
         filePathList: [],       // 文件路径列表
         createPath: './',       // 生成的文件路径
         isLog: true,            // 是否打印日志
+        isTimeStamp: false,     // 是否给html的js引用添加时间戳
         callBack: ''            // 回调函数
     }, opts);
 
@@ -34,7 +35,21 @@ var copyDir = function (opts) {
     // 创建文件
     filePathList.forEach(function (obj) {
         hfs.mkdir(path.dirname(obj.newFilePath), function () {
-            fs.createReadStream(obj.oldFilePath).pipe(fs.createWriteStream(obj.newFilePath));
+
+            if (path.basename(obj.newFilePath).indexOf('.html') > 0) {
+                var data = fs.readFileSync(obj.oldFilePath).toString(),
+                    date = new Date(),
+                    timeMap = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate()) + String(date.getHours()) + String(date.getMinutes()),
+                    seaConfigReg = /<script id="seaConfig">(.+)<\/script>\n/ig,  //seaConfig
+                    seaConfigStr = 'seajs.config({\'map\': [[ /^(.*\.(?:css|js))(.*)$/i, \'$1?v=' + timeMap + '\' ] ] });';
+
+                data = data.replace(seaConfigReg, '');
+                data = data.replace('<script src="${webroot}${theme_dir}/script/sea.js"></script>', '<script src="${webroot}${theme_dir}/script/sea.js"></script>\n<script id="seaConfig">' + seaConfigStr + '</script>');
+
+                hfs.writeFile(obj.newFilePath, data);
+            } else {
+                fs.createReadStream(obj.oldFilePath).pipe(fs.createWriteStream(obj.newFilePath));
+            }
 
             fileLength--;
 
