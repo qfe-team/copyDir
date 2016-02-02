@@ -38,14 +38,23 @@ var copyDir = function (opts) {
 
             if (path.basename(obj.newFilePath).indexOf('.html') > 0) {
                 var data = fs.readFileSync(obj.oldFilePath).toString(),
-                    date = new Date(),
-                    timeMap = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate()) + String(date.getHours()) + String(date.getMinutes()),
-                    seaConfigReg = /<script id="seaConfig">(.+)<\/script>\n/ig,  //seaConfig
-                    seaConfigStr = 'seajs.config({\'map\': [[ /^(.*\.(?:css|js))(.*)$/i, \'$1?v=' + timeMap + '\' ] ] });';
+                    timeMap = (new Date()).getTime(),
+                    seaConfigReg = /<script id="seaConfig">(.+)<\/script>\n/ig,
+                    seaConfigStr = 'seajs.config({\'map\': [[ /^(.*\.(?:css|js))(.*)$/i, \'$1?t=' + timeMap + '\' ] ] });',
+                    imgTimeStampReg = /([url\(|src\=][\'|\"].*\.png|gif|jpg)(\?t=\d+)?([\'|\"])/ig,
+                    cssTimeStampReg = /(<link.*href=[\'|\"].*\.css)(\?t=\d+)?([\'|\"]>)/ig,
+                    jsTimeStampReg = /(<script.*src=[\'|\"].*\.js)(\?t=\d+)?([\'|\"]>)/ig;
 
+                // 给seajs加载的模块加时间戳
                 data = data.replace(seaConfigReg, '');
                 data = data.replace('<script src="${webroot}${theme_dir}/script/sea.js"></script>', '<script src="${webroot}${theme_dir}/script/sea.js"></script>\n<script id="seaConfig">' + seaConfigStr + '</script>');
 
+                // 给页内的外链加时间戳
+                [imgTimeStampReg, cssTimeStampReg, jsTimeStampReg].forEach(function (reg) {
+                    data = data.replace(reg, '$1?t=' + timeMap + '$3');
+                });
+
+                // 创建该文件
                 hfs.writeFile(obj.newFilePath, data);
             } else {
                 fs.createReadStream(obj.oldFilePath).pipe(fs.createWriteStream(obj.newFilePath));
