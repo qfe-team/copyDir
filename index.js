@@ -48,6 +48,7 @@ var copyDir = function (opts) {
                 // 给seajs加载的模块加时间戳
                 data = data.replace(seaConfigReg, '');
                 data = data.replace('<script src="${webroot}${theme_dir}/script/sea.js"></script>', '<script src="${webroot}${theme_dir}/script/sea.js"></script>\n<script id="seaConfig">' + seaConfigStr + '</script>');
+                data = data.replace('<script src="${webroot}${theme_dir}/mobile/script/sea.js"></script>', '<script src="${webroot}${theme_dir}/mobile/script/sea.js"></script>\n<script id="seaConfig">' + seaConfigStr + '</script>');
 
                 // 给页内的外链加时间戳
                 [imgTimeStampReg, cssTimeStampReg, jsTimeStampReg].forEach(function (reg) {
