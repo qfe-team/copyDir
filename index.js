@@ -39,7 +39,7 @@ var copyDir = function (opts) {
 
             var stat = fs.lstatSync(obj.oldFilePath);
             if(stat.isDirectory()){return;}
-            
+
             hfs.mkdir(path.dirname(obj.newFilePath), function () {
 
                 if (path.basename(obj.newFilePath).indexOf('.html') > 0) {
@@ -47,7 +47,7 @@ var copyDir = function (opts) {
                         timeMap = (new Date()).getTime(),
                         seaConfigReg = /<script id="seaConfig">(.+)<\/script>\n/ig,
                         seaConfigStr = 'seajs.config({\'map\': [[ /^(.*\.(?:css|js))(.*)$/i, \'$1?t=' + timeMap + '\' ] ] });',
-                        imgTimeStampReg = /([url\(|src\=][\'|\"].*\.png|gif|jpg)(\?t=\d+)?([\'|\"])/ig,
+                        imgTimeStampReg = /([url\(|src\=][\'|\"]?.*\.png|gif|jpg)(\?t=\d+)?([\'|\"]?)/ig,
                         cssTimeStampReg = /(<link.*href=[\'|\"].*\.css)(\?t=\d+)?([\'|\"]>)/ig,
                         jsTimeStampReg = /(<script.*src=[\'|\"].*\.js)(\?t=\d+)?([\'|\"]>)/ig;
 
@@ -60,6 +60,15 @@ var copyDir = function (opts) {
                     [imgTimeStampReg, cssTimeStampReg, jsTimeStampReg].forEach(function (reg) {
                         data = data.replace(reg, '$1?t=' + timeMap + '$3');
                     });
+
+                    // 创建该文件
+                    hfs.writeFile(obj.newFilePath, data);
+                } else if(path.basename(obj.newFilePath).indexOf('.css') > 0){
+                    var data = fs.readFileSync(obj.oldFilePath).toString(),
+                        timeMap = (new Date()).getTime(),
+                        imgTimeStampReg = /([url\(|src\=][\'|\"]?.*\.png|gif|jpg)(\?t=\d+)?([\'|\"]?)/ig;
+
+                    data = data.replace(imgTimeStampReg, '$1?t=' + timeMap + '$3');
 
                     // 创建该文件
                     hfs.writeFile(obj.newFilePath, data);
